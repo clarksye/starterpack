@@ -21,7 +21,7 @@ EOL
 # Step 4: Create User and Password
 sudo touch /etc/sockd.passwd
 sudo /usr/sbin/sockd -N -n -f /etc/sockd.conf -p /var/run/sockd.pid
-sudo sockdpasswd -c /etc/sockd.passwd username
+sudo sockdpasswd -c /etc/sockd.passwd clarksye
 # Ganti 'username' dengan nama pengguna yang Anda inginkan
 # Anda akan diminta untuk memasukkan dan mengonfirmasi kata sandi
 
