@@ -10,7 +10,8 @@ read -s -p "Enter password for Shadowsocks: " password
 echo ""
 
 # Configure Shadowsocks
-sudo tee /etc/shadowsocks-libev/config.json > /dev/null << EOF
+config_file="/etc/shadowsocks-libev/config.json"
+sudo tee "$config_file" > /dev/null << EOF
 {
     "server": "0.0.0.0",
     "server_port": 8388,
@@ -19,7 +20,8 @@ sudo tee /etc/shadowsocks-libev/config.json > /dev/null << EOF
     "plugin": "obfs-server",
     "plugin_opts": "obfs=http;obfs-host=www.bing.com",
     "mode": "tcp_and_udp",
-    "timeout": 300
+    "timeout": 300,
+    "username": "$username"
 }
 EOF
 
