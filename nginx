@@ -1,13 +1,17 @@
 #!/bin/bash
 
+# Ambil alamat IP VPS
+ip_vps=$(curl -s http://api.ipify.org)
+
 # Install Nginx
 sudo apt update
 sudo apt install nginx -y
 
 # Create or edit Nginx configuration
-echo "server {
+sudo tee /etc/nginx/sites-available/default > /dev/null <<EOF
+server {
     listen 80;
-    server_name ip_vps_anda;
+    server_name _;
 
     location / {
         proxy_pass http://de.pyrin.herominers.com:1177;
@@ -29,7 +33,7 @@ echo "server {
         proxy_set_header Accept "application/json";
     }
 }
-" | sudo tee /etc/nginx/sites-available/default > /dev/null
+EOF
 
 # Test Nginx configuration
 sudo nginx -t
@@ -37,4 +41,4 @@ sudo nginx -t
 # Restart Nginx
 sudo systemctl restart nginx
 
-echo "Nginx setup completed."
+echo "Nginx setup completed. Your VPS IP: $ip_vps"
