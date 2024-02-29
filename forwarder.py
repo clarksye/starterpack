@@ -15,11 +15,13 @@ class ForwarderProtocol(protocol.Protocol):
 
     def connectedToMiningPool(self, response):
         print("Connected to mining pool")
-        self.mining_pool_protocol = ForwarderToPoolProtocol(self)
-        response.deliverBody(self.mining_pool_protocol)
+        mining_pool_protocol = ForwarderToPoolProtocol(self)
+        response.deliverBody(mining_pool_protocol)
+        self.mining_pool_protocol = mining_pool_protocol
 
     def dataReceived(self, data):
-        self.mining_pool_protocol.transport.write(data)
+        if hasattr(self, 'mining_pool_protocol') and hasattr(self.mining_pool_protocol, 'transport'):
+            self.mining_pool_protocol.transport.write(data)
 
     def connectionLost(self, reason):
         print("Client disconnected")
