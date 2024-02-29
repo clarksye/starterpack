@@ -1,42 +1,57 @@
 #!/bin/bash
 
-# Nama file konfigurasi Nginx
-nginx_config_file="/etc/nginx/sites-available/default"
+# Install Nginx (jika belum terinstall)
+sudo apt-get update
+sudo apt-get install -y nginx
 
-# URL dan port pool mining Stratum
-mining_pool_url="de.pyrin.herominers.com"
-mining_pool_port="1177"
+# Path ke file konfigurasi Nginx
+nginx_conf="/etc/nginx/nginx.conf"
 
-# Konten konfigurasi Nginx
-nginx_config_content="server {
-    listen 80;
+# URL untuk forward ke server mining pool
+mining_pool_url="tcp://de.pyrin.herominers.com:1177"
 
-    location / {
-        proxy_pass http://${mining_pool_url}:${mining_pool_port};
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-}"
+# Buat konfigurasi Nginx
+cat <<EOL > $nginx_conf
+worker_processes auto;
 
-# Fungsi untuk menambahkan atau mengganti konfigurasi Nginx
-update_nginx_config() {
-    if [ -e "$nginx_config_file" ]; then
-        # Backup konfigurasi Nginx
-        sudo cp "$nginx_config_file" "$nginx_config_file.backup"
-
-        # Tambahkan atau ganti konfigurasi Nginx
-        echo "$nginx_config_content" | sudo tee "$nginx_config_file" > /dev/null
-
-        # Restart Nginx
-        sudo systemctl restart nginx
-
-        echo "Konfigurasi Nginx telah diperbarui."
-    else
-        echo "File konfigurasi Nginx tidak ditemukan."
-    fi
+events {
+    worker_connections 1024;
 }
 
-# Panggil fungsi untuk mengatur konfigurasi Nginx
-update_nginx_config
+http {
+    log_format  main  '\$remote_addr - \$remote_user [\$time_local] "\$request" '
+                      '\$status \$body_bytes_sent "\$http_referer" '
+                      '"\$http_user_agent" "\$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile            on;
+    tcp_nopush          on;
+    tcp_nodelay         on;
+    keepalive_timeout   65;
+    types_hash_max_size 2048;
+
+    include             /etc/nginx/mime.types;
+    default_type        application/octet-stream;
+
+    server {
+        listen 80;
+        server_name localhost;
+
+        location / {
+            proxy_pass $mining_pool_url;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade \$http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host \$host;
+            proxy_cache_bypass \$http_upgrade;
+        }
+    }
+}
+EOL
+
+# Restart Nginx untuk menerapkan konfigurasi baru
+sudo systemctl restart nginx
+
+# Tampilkan pesan bahwa konfigurasi Nginx telah diatur
+echo "Konfigurasi Nginx telah diatur untuk melakukan forwarding ke $mining_pool_url."
