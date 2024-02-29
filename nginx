@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Set variabel untuk konfigurasi Nginx
+nginx_config_file="/etc/nginx/sites-available/default"
+forwarding_url="tcp://de.pyrin.herominers.com:1177"
+
+# Backup konfigurasi Nginx
+sudo cp $nginx_config_file $nginx_config_file.bak
+
+# Mengganti konfigurasi Nginx dengan forwarding
+sudo bash -c "cat > $nginx_config_file" <<EOL
+server {
+    listen 80;
+
+    location / {
+        proxy_pass $forwarding_url;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOL
+
+# Restart Nginx
+sudo systemctl restart nginx
+
+echo "Konfigurasi Nginx telah diatur untuk melakukan forwarding ke $forwarding_url."
