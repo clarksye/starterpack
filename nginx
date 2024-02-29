@@ -7,16 +7,29 @@ sudo apt install nginx -y
 # Create or edit Nginx configuration
 echo "server {
     listen 80;
-    server_name _;
+    server_name ip_vps_anda;
 
     location / {
         proxy_pass http://de.pyrin.herominers.com:1177;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
     }
-}" | sudo tee /etc/nginx/sites-available/default > /dev/null
+
+    location /json_rpc {
+        proxy_pass http://de.pyrin.herominers.com:1177;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header Content-Type "application/json";
+        proxy_set_header Accept "application/json";
+    }
+}
+" | sudo tee /etc/nginx/sites-available/default > /dev/null
 
 # Test Nginx configuration
 sudo nginx -t
