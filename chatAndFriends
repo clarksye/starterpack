@@ -1,0 +1,38 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local chatEvent = ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest
+
+-- Pesan-pesan untuk dikirim ke chat (Cerita)
+local msgs = {
+    "Halo semua! Lagi nyari fruit nih, siapa yang punya?",
+    "Aku lagi grind Blox Fruits, pengen sampe level max nihh gas in yaa",
+    "Maaf kalau kena hit aku yaa guys",
+    "Cari fruit nih, kalau ada yang nemu, beri tau ya!",
+    "Siapa yang udah lama main Blox Fruit? Pengen belajar tips dan trik.",
+    "Eh, ada yang tahu cara dapetin fruit langka? Aku baru nyoba dapetin Dragon!"
+}
+local i = 1
+
+-- Auto chat tiap 60 detik
+spawn(function()
+	while true do
+		chatEvent:FireServer(msgs[i], "All")
+		i = (i % #msgs) + 1
+		wait(60)
+	end
+end)
+
+-- Auto tambah teman tiap 5 menit
+spawn(function()
+	while true do
+		local added = false
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p ~= Players.LocalPlayer and not Players.LocalPlayer:IsFriendsWith(p.UserId) then
+				Players.LocalPlayer:RequestFriendship(p)
+				added = true
+				break
+			end
+		end
+		wait(300) -- 5 menit
+	end
+end)
