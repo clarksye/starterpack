@@ -1718,7 +1718,3 @@ function OrionLib:Destroy()
 end
 
 return OrionLib
-Beta
-0 / 3000
-used queries
-1
